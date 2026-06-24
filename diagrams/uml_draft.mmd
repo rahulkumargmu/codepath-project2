@@ -1,0 +1,47 @@
+classDiagram
+    %% PawPal+ class diagram — draft
+    %% Four core classes: Owner, Pet, Task, Scheduler
+
+    class Owner {
+        +str name
+        +int available_minutes
+        +str preferred_start_time
+        +list~Pet~ pets
+        +add_pet(pet) None
+        +get_pets() list
+    }
+
+    class Pet {
+        +str name
+        +str species
+        +str breed
+        +int age_years
+        +list~Task~ tasks
+        +add_task(task) None
+        +get_tasks() list
+    }
+
+    class Task {
+        +str title
+        +int duration_minutes
+        +str priority
+        +bool recurring
+        +str notes
+        +is_high_priority() bool
+    }
+
+    class Scheduler {
+        +Owner owner
+        +Pet pet
+        +int available_minutes
+        +generate_plan() list
+        +sort_tasks(tasks) list
+        +filter_tasks(tasks, available_minutes) list
+        +explain_plan(scheduled, skipped) str
+    }
+
+    Owner "1" --> "1..*" Pet : owns
+    Pet "1" --> "0..*" Task : has
+    Scheduler --> Owner : uses
+    Scheduler --> Pet : uses
+    Scheduler --> Task : schedules

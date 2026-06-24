@@ -2,10 +2,25 @@
 
 ## 1. System Design
 
+**Core user actions**
+
+1. **Add owner and pet information** — The user enters basic profile details such as the owner's name, the pet's name, breed, and any relevant preferences (e.g., preferred walk times). This establishes the context the scheduler uses when building a plan.
+
+2. **Add and edit care tasks** — The user creates individual tasks (walks, feeding, medication, grooming, enrichment, etc.) and assigns each a duration and a priority level. Tasks can be updated or removed as the pet's needs change, giving the owner full control over what gets scheduled.
+
+3. **Generate and view the daily schedule** — The user requests a daily plan, and the app produces an ordered list of tasks fitted to the owner's available time window. The plan shows the scheduled time, duration, and priority of each task, and explains why tasks were chosen or skipped (e.g., lower-priority tasks dropped when time runs out).
+
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+The initial design uses four classes defined in `pawpal_system.py`:
+
+- **Task** (dataclass) — The smallest unit of work. It holds a `title`, `duration_minutes`, `priority` ("low" / "medium" / "high"), a `recurring` flag, and optional `notes`. Its only behavioral method is `is_high_priority()`. Task is a pure data object with no knowledge of pets or owners.
+
+- **Pet** (dataclass) — Represents the animal being cared for. It stores profile details (`name`, `species`, `breed`, `age_years`) and owns a list of `Task` objects. It provides `add_task()` and `get_tasks()` to manage that list. Pet knows nothing about scheduling — it is purely a data container.
+
+- **Owner** (dataclass) — Represents the person responsible for the pet. It stores `name`, `available_minutes` (total care time available in a day), and `preferred_start_time`. It owns a list of `Pet` objects and provides `add_pet()` / `get_pets()`. Owner preferences (available time, start time) are the primary scheduling constraints.
+
+- **Scheduler** — The only class with real logic. It takes an `Owner` and a `Pet` at construction time and exposes a `generate_plan()` method that returns `{"scheduled": [...], "skipped": [...]}`. Internally it delegates to `sort_tasks()` (sort by priority then duration) and `filter_tasks()` (greedy selection within `available_minutes`). An `explain_plan()` method produces a human-readable summary of the reasoning.
 
 **b. Design changes**
 
